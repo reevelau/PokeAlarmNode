@@ -6,6 +6,7 @@ var express = require('express');
 var bodyParser = require('body-parser');
 var Queue = require('co-queue');
 var co = require('co');
+var moment = require('moment');
 
 var NodeGeocoder = require('node-geocoder');
 
@@ -64,6 +65,7 @@ co(function*(){
         geoCoderAddr: yield geocoder.reverse({lat:body.message.latitude, lon:body.message.longitude}),
         last_modified_time: body.message.last_modified_time,
         time_until_hidden_ms: body.message.time_until_hidden_ms,
+        disappear_time: body.message.disappear_time,
         spawnpointId: parseInt(body.message.spawnpoint_id,16),
         message: ''
       };
@@ -78,12 +80,16 @@ co(function*(){
         }
         else{
           //TODO!
-          // hack
-          var spawntime = pokemon.last_modified_time + 738310
-          timeInfo = 'NOT FOUND';
+          var remains = moment.duration(pokemon.time_until_hidden_ms);
+          var disappear = moment.unix(pokemon.disappear_time);
+
+          timeInfo = `* end: ${disappear.format('h:mm:ss a')} (${remains.humanize()})`;
+          debug(`Spawn point not found: ${body.message}`);
         }
 
-        pokemon.message = `${pokemon.name} (${pokemon.id}) @${pokemon.geoCoderAddr[0].streetName}\n${timeInfo}`;
+        pokemon.message = `${pokemon.name} (${pokemon.id}) @${pokemon.geoCoderAddr[0].streetName}\n${timeInfo}\n`;
+        pokemon.message += `https://www.google.com/maps?q=${pokemon.latitude},${pokemon.longitude}\n`;
+        pokemon.message += `#${pokemon.name} #${pokemon.geoCoderAddr[0].streetName}`;
         yield bot.handleSpawn(pokemon);
         debug(`[+] ${pokemon.name} notification was triggered.`)
       }
@@ -116,7 +122,7 @@ app.get('/', function(req,res){
 
 app.post('/', function(req,res){
   var body = req.body;
-  process.stdout.write('.');
+  //process.stdout.write('.');
   queue.push(body);
   res.send('OK');
 });
