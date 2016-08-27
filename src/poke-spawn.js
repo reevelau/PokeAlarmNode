@@ -15,15 +15,26 @@ const SPAWN_UNDEF = -1,
   VSPAWN_2x15 = 2011;
 
 class SpawnTime{
-  constructor(start,duration){
+  constructor(start,duration, nowProvider){
     this.start = start;
     this.duration = duration;
-    this.end = moment(start.valueOf() + duration);
+    this.end = moment(start.valueOf() + duration.asMilliseconds());
+
+    if(nowProvider){
+      this.getNow = nowProvider;
+    }
+    else{
+      this.getNow = function(){
+        return moment();
+      }
+    }
   }
 
   isWithin(){
-    var now = moment();
-    if(this.start <= now && now <= this.end){
+    var now = this.getNow();
+    var greaterStart = this.start.valueOf() <= now.valueOf();
+    var lesserEnd = now.valueOf() <= this.end.valueOf();
+    if(greaterStart && lesserEnd){
       return true;
     }
     else{
@@ -32,24 +43,26 @@ class SpawnTime{
   }
 
   remainings(){
-    var now = moment();
+    var now = this.getNow();
     return moment.duration(this.end - now);
   }
 };
 
 class Spawn{
-  constructor(last_modified_time, spawnPointTime, type){
+  constructor(last_modified_time, spawnPointTime, type, nowProvider){
 
     var mod = moment(last_modified_time).startOf('hour').add(moment.duration(spawnPointTime * 60000));
 
-    if(type === SPAWN_2x15){
-
+    if(nowProvider){
+      this.getNow = nowProvider;
     }
-    debug(`[+] spawn time ${mod.toString()}`)
+    else{
+      this.getNow = function(){
+        return moment();
+      }
+    }
     this.startTime = mod;
     this.spawn_type = type;
-
-
   }
 
   toString(){
@@ -65,6 +78,9 @@ class Spawn{
       }
     });
 
+    if(this.spawn_type === SPAWN_2x15 &&spawn_time.length!=2){
+      ret += `\nDEFECT_201`;
+    }
     return ret;
   };
 
@@ -101,23 +117,34 @@ class Spawn{
         duration = moment.duration(time15minInMs); // 15min
         var end = moment(start.valueOf() + time15minInMs);
 
-        var now = moment();
-        debug(`[+] start1 ${start.toString()}`);
+        var now = this.getNow();
 
-        debug(`[+] now ${now.toString()}`);
         if(start.valueOf() <= now.valueOf() && now.valueOf() <= end.valueOf()){
           var start2 = moment(start.valueOf() + 2 * time15minInMs); // second start
-          debug(`[+] start2 ${start2.toString()}`);
-          ret.push(new SpawnTime(start, duration));
-          ret.push(new SpawnTime(start2, duration));
+          ret.push(new SpawnTime(start, duration, this.getNow));
+          ret.push(new SpawnTime(start2, duration, this.getNow));
         }
         else{
-          var start2 = moment(start.valueOf() - 2 * time15minInMs); // second start
-          debug(`[+] start2 ${start2.toString()}`);
-          ret.push(new SpawnTime(start2, duration));
-          ret.push(new SpawnTime(start, duration));
-        }
+          var start2;
+          // this if clasuse is highly convoluted with the calculation of this.startTime in constructor
+          // Constructor has set a fix reference to startTime and doesn't consider
+          // whether we have pass it or not
 
+          if(start.minute() < this.getNow().minute())
+          {
+            // when we have passed the spawn point of current hour
+            // the current spawn should be happened 30min after the original spawn time
+            start2 = moment(start.valueOf() + 2 * time15minInMs); // second start
+          }
+          else{
+            // when we have not passed the spawn time of current hour and we are not within spawn time
+            // the current spawen should be happened 30min before the original spawn time
+            start2 = moment(start.valueOf() - 2 * time15minInMs); // second start
+          }
+          ret.push(new SpawnTime(start2, duration, this.getNow));
+          // there is only 1 remaining time segment for this spawn!.
+          debug(`DEFECT_201! pokemongo-map always scrapes at second phrase of 201`);
+        }
         break;
       default: // for type 1, -1 and other
 

@@ -4,10 +4,10 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "mocha --compilers js:babel-register",
+    "test": "mocha --reporter spec",
     "start": "nodemon src/index.js --exec babel-node",
     "build": "babel src -d dist",
-    "serve": "node dist/index.js"
+    "serve": "export DEBUG=main;node ./src/index.js"
   },
   "author": "",
   "license": "ISC",
