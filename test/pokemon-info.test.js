@@ -1,5 +1,6 @@
 
-var PokemonInfo = require('./pokemon-info.js');
+
+var PokemonInfo = require('../src/pokemon-info.js');
 
 function* foo(lang){
   var info = new PokemonInfo();

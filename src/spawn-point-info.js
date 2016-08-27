@@ -5,6 +5,7 @@ var jsonfile = require('jsonfile');
 var spawnpointfile = 'spawn_point_store.json'
 var reindex = require('reindex');
 var debug = require('debug')('spawn-point-info');
+var _ = require('lodash');
 
 class SpawnInfoStore{
   constructor(spawnpoint_date_file){
@@ -37,6 +38,7 @@ class SpawnInfoStore{
 
     return this.SpawnPointDb[id];
   }
+
 }
 
 module.exports = SpawnInfoStore;

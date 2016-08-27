@@ -1,4 +1,5 @@
-var Messenger = require('./telegram-bot-messenger.js');
+
+var Messenger = require('../src/telegram-bot-messenger.js');
 
 
 
