@@ -89,7 +89,7 @@ class PokemonInfo{
 
 
   isEnabled(id){
-    if(isValid(id)){
+    if(this.isValid(id)){
       if(this.pokeInfoStore[id].config.toLowerCase().indexOf('false') !== -1){
         return false;
       }
@@ -102,7 +102,7 @@ class PokemonInfo{
   }
 
   isNotify(id){
-    if(isValid(id)){
+    if(this.isValid(id)){
       if(this.pokeInfoStore[id].config.toLowerCase().indexOf('notify') !== -1){
         return true;
       }
