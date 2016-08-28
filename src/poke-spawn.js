@@ -138,7 +138,7 @@ class Spawn{
     }
     else{
       this.getNow = function(){
-        return moment();
+        return moment(last_modified_time);
       }
     }
     debug(`parameters: [last_modified_time:${last_modified_time}] [spawnPointTime:${spawnPointTime}] [type:${type}] [now:${this.getNow().toString()}]`);
