@@ -85,7 +85,7 @@ class SpawnTime{
 class Spawn{
 
   constructor(last_modified_time, spawnPointTime, type, nowProvider){
-
+    debug(`parameters: [last_modified_time:${last_modified_time}] [spawnPointTime:${spawnPointTime}] [type:${type}]`)
     var mod = moment(last_modified_time).startOf('hour').add(moment.duration(spawnPointTime * 60000));
 
     if(nowProvider){
