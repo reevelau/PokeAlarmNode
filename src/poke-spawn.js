@@ -15,6 +15,39 @@ const SPAWN_UNDEF = -1,
   SPAWN_2x15 = 201,
   VSPAWN_2x15 = 2011;
 
+const time15minInMs = 15 * 60 * 1000;
+
+function convert_min_to_ms(min){
+  return Math.floor(min * 60 * 1000);
+};
+
+function get_diff_by_minute_number(num1,num2){
+  var bigger = num1>num2?num1: num2;
+  var smaller = num1<num2? num1: num2;
+  return Math.min( bigger - smaller, 60 - bigger + smaller );
+};
+
+function get_spawn_duration(type){
+  var ret;
+  switch(type){
+    case SPAWN_1x30:
+      ret = moment.duration(2 * time15minInMs);
+      break;
+    case SPAWN_1x45:
+      ret = moment.duration(3 * time15minInMs);
+      break;
+    case SPAWN_1x60:
+      ret = moment.duration(4 * time15minInMs);
+      break;
+    case SPAWN_1x15:
+    default:
+      ret = moment.duration(time15minInMs);
+      break;
+  };
+
+  return ret;
+};
+
 class SpawnTime{
   constructor(start,duration, nowProvider){
     this.start = start;
@@ -50,6 +83,7 @@ class SpawnTime{
 };
 
 class Spawn{
+
   constructor(last_modified_time, spawnPointTime, type, nowProvider){
 
     var mod = moment(last_modified_time).startOf('hour').add(moment.duration(spawnPointTime * 60000));
@@ -62,8 +96,9 @@ class Spawn{
         return moment();
       }
     }
-    this.startTime = mod;
+    this.startTime = this.get_nearest_spawn_time_by_type(spawnPointTime,type);
     this.spawn_type = type;
+    this.spawnPointTime = spawnPointTime;
   }
 
   toString(){
@@ -88,6 +123,46 @@ class Spawn{
   };
 
 
+
+
+
+  get_nearest_spawn_time(spawn_duration, spawn_point_time_in_ms){
+    var spawn_time = this.getNow();
+    spawn_time.subtract(spawn_duration);
+    spawn_time.startOf('hour');
+    spawn_time.add(moment.duration(spawn_point_time_in_ms));
+    return spawn_time;
+  };
+
+
+  get_nearest_spawn_time_by_type(spawn_point_time_in_min, type){
+    var ret = 0;
+    var spawnDuration = get_spawn_duration(type);
+    var spawn_time_in_ms = convert_min_to_ms(spawn_point_time_in_min);
+
+    if(type === SPAWN_2x15){
+      var second_spawn_point_time_in_min = (spawn_point_time_in_min + 30) %60;
+
+      var curMin = this.getNow().minute();
+
+      if( get_diff_by_minute_number(curMin, spawn_point_time_in_min)
+            <  get_diff_by_minute_number(curMin, second_spawn_point_time_in_min)){
+        debug(`[+] using primary spawn time for type_201`);
+        ret = this.get_nearest_spawn_time(spawnDuration, spawn_time_in_ms);
+      }
+      else{
+        debug(`[+] using secondary spawn time for type_201`);
+        ret = this.get_nearest_spawn_time(spawnDuration, convert_min_to_ms(second_spawn_point_time_in_min));
+      }
+    }
+    else{
+      // others
+      ret = this.get_nearest_spawn_time(spawnDuration, spawn_time_in_ms);
+    }
+
+    return ret;
+  }
+
   cal_spawn_time(){
     var ret = [];
     var start,duration;
@@ -98,54 +173,38 @@ class Spawn{
       case 101:
         start = moment(this.startTime);
         duration = moment.duration(time15minInMs); // 15min
-        ret.push(new SpawnTime(start, duration));
+        ret.push(new SpawnTime(start, duration, this.getNow));
         break;
       case 102:
         start= moment(this.startTime);
         duration= moment.duration(2 * time15minInMs); // 30min
-        ret.push(new SpawnTime(start, duration));
+        ret.push(new SpawnTime(start, duration, this.getNow));
         break;
       case 103:
         start= moment(this.startTime);
         duration= moment.duration(3 * time15minInMs); // 45min
-        ret.push(new SpawnTime(start, duration));
+        ret.push(new SpawnTime(start, duration, this.getNow));
         break;
       case 104:
         start= moment(this.startTime);
         duration= moment.duration(4 * time15minInMs); // 60min
-        ret.push(new SpawnTime(start, duration));
+        ret.push(new SpawnTime(start, duration, this.getNow));
         break;
       case 201:
         start= moment(this.startTime);
         duration = moment.duration(time15minInMs); // 15min
-        var end = moment(start.valueOf() + time15minInMs);
+        ret.push(new SpawnTime(start, duration, this.getNow));
 
-        var now = this.getNow();
+        var startMin = start.minute();
+        var spawnMin = Math.floor(this.spawnPointTime);
 
-        if(start.valueOf() <= now.valueOf() && now.valueOf() <= end.valueOf()){
-          var start2 = moment(start.valueOf() + 2 * time15minInMs); // second start
-          ret.push(new SpawnTime(start, duration, this.getNow));
-          ret.push(new SpawnTime(start2, duration, this.getNow));
+        if(startMin === spawnMin){
+          // using primary
+          var start2 = moment(this.startTime).add(moment.duration(2*time15minInMs));
+          var duration2 = moment.duration(time15minInMs); // 15min
+          ret.push(new SpawnTime(start2, duration2, this.getNow));
         }
         else{
-          var start2;
-          // this if clasuse is highly convoluted with the calculation of this.startTime in constructor
-          // Constructor has set a fix reference to startTime and doesn't consider
-          // whether we have pass it or not
-
-          if(start.minute() < this.getNow().minute())
-          {
-            // when we have passed the spawn point of current hour
-            // the current spawn should be happened 30min after the original spawn time
-            start2 = moment(start.valueOf() + 2 * time15minInMs); // second start
-          }
-          else{
-            // when we have not passed the spawn time of current hour and we are not within spawn time
-            // the current spawen should be happened 30min before the original spawn time
-            start2 = moment(start.valueOf() - 2 * time15minInMs); // second start
-          }
-          ret.push(new SpawnTime(start2, duration, this.getNow));
-          // there is only 1 remaining time segment for this spawn!.
           debug(`DEFECT_201! pokemongo-map always scrapes at second phrase of 201`);
         }
         break;
@@ -153,7 +212,7 @@ class Spawn{
 
         start= moment(this.last_modified_time),
         duration= moment.duration(15 * 60 * 1000) // 15min
-        ret.push(new SpawnTime(start, duration));
+        ret.push(new SpawnTime(start, duration, this.getNow));
         break;
     }
 

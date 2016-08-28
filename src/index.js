@@ -50,6 +50,39 @@ var bot = new Messenger(
 
 var queue = new Queue();
 
+function * messageHandler(pokemon){
+  if(pokemon.enable){
+    var timeInfo = '';
+    var stype = 'not_found';
+
+    var spawnp = spawnPointStore.getSpawnPointById(pokemon.spawnpointId);
+    if(spawnp){
+      stype = spawnp.type;
+      var spawn = new Spawn(pokemon.last_modified_time, spawnp.spawntime,  spawnp.type);
+      timeInfo = spawn.toString();
+    }
+    else{
+      var remains = moment.duration(pokemon.time_until_hidden_ms);
+      var disappear = moment.unix(pokemon.disappear_time);
+
+      timeInfo = `* end: ${disappear.format('h:mm:ss a')} (${remains.humanize()})`;
+      debug(`Spawn point not found: ${body.message}`);
+    }
+
+    pokemon.message = `<code>${pokemon.name}</code> (${pokemon.id}) @${pokemon.geoCoderAddr[0].streetName}\n${timeInfo}\n`;
+    pokemon.message += `https://www.google.com/maps?q=${pokemon.latitude},${pokemon.longitude}\n`;
+    pokemon.message += `#${pokemon.name} #${pokemon.geoCoderAddr[0].streetName}`;
+    pokemon.message += `\n`;
+    pokemon.message += `#e${pokemon.encounter_id.toString(16)} #type_${stype} #ss_${pokemon.spawnpointId}`
+
+    yield bot.handleSpawn(pokemon);
+    debug(`[+] ${pokemon.name} notification was triggered.`)
+  }
+  else{
+    debug(`[+] ${pokemon.name} ignored: notify not enabled.`);
+  }
+};
+
 co(function*(){
   while(true){
 
@@ -102,38 +135,8 @@ co(function*(){
           message: ''
         };
 
-        if(pokemon.enable){
-          var timeInfo = '';
-          var stype = 'not_found';
+        yield messageHandler(pokemon);
 
-          var spawnp = spawnPointStore.getSpawnPointById(pokemon.spawnpointId);
-          if(spawnp){
-            stype = spawnp.type;
-            var spawn = new Spawn(pokemon.last_modified_time, spawnp.spawntime,  spawnp.type);
-            timeInfo = spawn.toString();
-          }
-          else{
-            //TODO!
-
-            var remains = moment.duration(pokemon.time_until_hidden_ms);
-            var disappear = moment.unix(pokemon.disappear_time);
-
-            timeInfo = `* end: ${disappear.format('h:mm:ss a')} (${remains.humanize()})`;
-            debug(`Spawn point not found: ${body.message}`);
-          }
-
-          pokemon.message = `<code>${pokemon.name}</code> (${pokemon.id}) @${pokemon.geoCoderAddr[0].streetName}\n${timeInfo}\n`;
-          pokemon.message += `https://www.google.com/maps?q=${pokemon.latitude},${pokemon.longitude}\n`;
-          pokemon.message += `#${pokemon.name} #${pokemon.geoCoderAddr[0].streetName}`;
-          pokemon.message += `\n`;
-          pokemon.message += `#e${pokemon.encounter_id.toString(16)} #type_${stype} #ss_${pokemon.spawnpointId}`
-
-          yield bot.handleSpawn(pokemon);
-          debug(`[+] ${pokemon.name} notification was triggered.`)
-        }
-        else{
-          debug(`[+] ${pokemon.name} ignored: notify not enabled.`);
-        }
       }
     }
     catch(e){
