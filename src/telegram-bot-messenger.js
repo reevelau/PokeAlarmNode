@@ -36,7 +36,7 @@ class TelegramBotMessenger{
         .then((success)=>{
           debug(`[+] finish sending map`);
 
-          this.bot.sendMessage(this.chat_id, pokemon.message)
+          this.bot.sendMessage(this.chat_id, pokemon.message, {parse_mode:'HTML', disable_notification: true})
             .then(success=>{
               debug(`[+] finish sending message`);
               resolve(success);

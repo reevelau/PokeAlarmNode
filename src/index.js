@@ -7,6 +7,9 @@ var bodyParser = require('body-parser');
 var Queue = require('co-queue');
 var co = require('co');
 var moment = require('moment');
+var cache = require('memory-cache');
+var is = require('is_js');
+var atob = require('atob');
 
 var NodeGeocoder = require('node-geocoder');
 
@@ -51,52 +54,90 @@ co(function*(){
 
     var body = yield queue.next();
 
-    if(body.message.pokemon_id )
-    {
-      var pokeId = body.message.pokemon_id;
-      var enable = pokeInfo.isEnabled(pokeId);
+    try{
+      if(body.type === 'pokemon'
+            && is.string( body.message.encounter_id)
+            && null === cache.get(body.message.encounter_id))
+      {
+        cache.put(
+          body.message.encounter_id,
+          true,
+          body.message.time_until_hidden_ms,
+          (key,value)=>{
+            debug(`[+] memory-cache GC [${key}:${value}]`)
+          }
+        );
+        var pokeId = body.message.pokemon_id;
 
-      var pokemon = {
-        id : pokeId,
-        name: pokeInfo.getPokemonName(pokeId),
-        enable : enable,
-        latitude: body.message.latitude,
-        longitude: body.message.longitude,
-        geoCoderAddr: yield geocoder.reverse({lat:body.message.latitude, lon:body.message.longitude}),
-        last_modified_time: body.message.last_modified_time,
-        time_until_hidden_ms: body.message.time_until_hidden_ms,
-        disappear_time: body.message.disappear_time,
-        spawnpointId: parseInt(body.message.spawnpoint_id,16),
-        message: ''
-      };
+        /*
+        "message": {
+            "time_until_hidden_ms": 836349,
+            "last_modified_time": 1472350762791,
+            "disappear_time": 1472351599,
+            "pokemon_id": 42,
+            "latitude": 22.37469662944935,
+            "spawnpoint_id": "340407a8041",
+            "encounter_id": "MTM4OTU1ODUzNDQ0MjI0NDM0NTM=",
+            "longitude": 114.18002367787557
+          },
+          "type": "pokemon"
+        */
 
-      if(pokemon.enable){
-        var timeInfo = '';
 
-        var spawnp = spawnPointStore.getSpawnPointById(pokemon.spawnpointId);
-        if(spawnp){
-          var spawn = new Spawn(pokemon.last_modified_time, spawnp.spawntime,  spawnp.type);
-          timeInfo = spawn.toString();
+        var enable = pokeInfo.isEnabled(pokeId);
+
+        var pokemon = {
+          id : pokeId,
+          name: pokeInfo.getPokemonName(pokeId),
+          enable : enable,
+          latitude: body.message.latitude,
+          longitude: body.message.longitude,
+          geoCoderAddr: yield geocoder.reverse({lat:body.message.latitude, lon:body.message.longitude}),
+          last_modified_time: body.message.last_modified_time,
+          time_until_hidden_ms: body.message.time_until_hidden_ms,
+          disappear_time: body.message.disappear_time,
+          spawnpointId: parseInt(body.message.spawnpoint_id,16),
+          encounter_id: parseInt(atob(body.message.encounter_id),10),
+          message: ''
+        };
+
+        if(pokemon.enable){
+          var timeInfo = '';
+          var stype = 'not_found';
+
+          var spawnp = spawnPointStore.getSpawnPointById(pokemon.spawnpointId);
+          if(spawnp){
+            stype = spawnp.type;
+            var spawn = new Spawn(pokemon.last_modified_time, spawnp.spawntime,  spawnp.type);
+            timeInfo = spawn.toString();
+          }
+          else{
+            //TODO!
+
+            var remains = moment.duration(pokemon.time_until_hidden_ms);
+            var disappear = moment.unix(pokemon.disappear_time);
+
+            timeInfo = `* end: ${disappear.format('h:mm:ss a')} (${remains.humanize()})`;
+            debug(`Spawn point not found: ${body.message}`);
+          }
+
+          pokemon.message = `<code>${pokemon.name}</code> (${pokemon.id}) @${pokemon.geoCoderAddr[0].streetName}\n${timeInfo}\n`;
+          pokemon.message += `https://www.google.com/maps?q=${pokemon.latitude},${pokemon.longitude}\n`;
+          pokemon.message += `#${pokemon.name} #${pokemon.geoCoderAddr[0].streetName}`;
+          pokemon.message += `\n`;
+          pokemon.message += `#e${pokemon.encounter_id.toString(16)}, #type_${stype}, #ss_${pokemon.spawnpointId}`
+
+          yield bot.handleSpawn(pokemon);
+          debug(`[+] ${pokemon.name} notification was triggered.`)
         }
         else{
-          //TODO!
-          var remains = moment.duration(pokemon.time_until_hidden_ms);
-          var disappear = moment.unix(pokemon.disappear_time);
-
-          timeInfo = `* end: ${disappear.format('h:mm:ss a')} (${remains.humanize()})`;
-          debug(`Spawn point not found: ${body.message}`);
+          debug(`[+] ${pokemon.name} ignored: notify not enabled.`);
         }
-
-        pokemon.message = `${pokemon.name} (${pokemon.id}) @${pokemon.geoCoderAddr[0].streetName}\n${timeInfo}\n`;
-        pokemon.message += `https://www.google.com/maps?q=${pokemon.latitude},${pokemon.longitude}\n`;
-        pokemon.message += `#${pokemon.name} #${pokemon.geoCoderAddr[0].streetName}`;
-        yield bot.handleSpawn(pokemon);
-        debug(`[+] ${pokemon.name} notification was triggered.`)
       }
-      else{
-        debug(`[+] ${pokemon.name} ignored: notify not enabled.`);
-      }
-
+    }
+    catch(e){
+      var msg = JSON.stringify(body,'',2);
+      debug(`error: ${e} when processing ${msg}`);
     }
   }
 
@@ -122,7 +163,6 @@ app.get('/', function(req,res){
 
 app.post('/', function(req,res){
   var body = req.body;
-  //process.stdout.write('.');
   queue.push(body);
   res.send('OK');
 });

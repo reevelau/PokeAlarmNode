@@ -5,13 +5,14 @@
   "main": "index.js",
   "scripts": {
     "test": "mocha --reporter spec",
-    "start": "nodemon src/index.js --exec babel-node",
+    "start": "export DEBUG=main;nodemon src/index.js --exec babel-node",
     "build": "babel src -d dist",
     "serve": "export DEBUG=main;node ./src/index.js"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "atob": "^2.0.3",
     "babel-connect": "^6.0.2",
     "body-parser": "^1.15.2",
     "chai": "^3.5.0",
@@ -21,8 +22,10 @@
     "connect": "^3.4.1",
     "debug": "^2.2.0",
     "express": "^4.14.0",
+    "is_js": "^0.8.0",
     "jsonfile": "^2.3.1",
     "lodash": "^4.15.0",
+    "memory-cache": "^0.1.6",
     "mocha": "^3.0.2",
     "moment": "^2.14.1",
     "node-geocoder": "^3.14.0",
