@@ -125,7 +125,7 @@ co(function*(){
           pokemon.message += `https://www.google.com/maps?q=${pokemon.latitude},${pokemon.longitude}\n`;
           pokemon.message += `#${pokemon.name} #${pokemon.geoCoderAddr[0].streetName}`;
           pokemon.message += `\n`;
-          pokemon.message += `#e${pokemon.encounter_id.toString(16)}, #type_${stype}, #ss_${pokemon.spawnpointId}`
+          pokemon.message += `#e${pokemon.encounter_id.toString(16)} #type_${stype} #ss_${pokemon.spawnpointId}`
 
           yield bot.handleSpawn(pokemon);
           debug(`[+] ${pokemon.name} notification was triggered.`)
