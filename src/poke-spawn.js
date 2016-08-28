@@ -3,6 +3,7 @@
 var moment = require('moment');
 var _ = require('lodash');
 var debug = require('debug')('poke-spawn');
+var humanizeDuration = require('humanize-duration');
 const SPAWN_UNDEF = -1,
   SPAWN_DEF = 1,
   SPAWN_1x0 = 100,
@@ -71,7 +72,9 @@ class Spawn{
 
     spawn_time.forEach((time)=>{
       if(time.isWithin()){
-        ret += `To: ${time.end.format('h:mm:ss a')} (${time.remainings().humanize()} remains)`;
+        var remains = Math.floor(time.remainings().asMilliseconds() /1000) *1000;
+
+        ret += `To: ${time.end.format('h:mm:ss a')} (${humanizeDuration(remains)} remains)`;
       }
       else{
         ret += `\nNext: (start:${time.start.format('h:mm:ss a')}) (end:${time.end.format('h:mm:ss a')})`;
