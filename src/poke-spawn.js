@@ -16,7 +16,7 @@ const SPAWN_UNDEF = -1,
   VSPAWN_2x15 = 2011;
 
 const time15minInMs = 15 * 60 * 1000;
-
+// private : used to convert duration in minutes to duration in millisecond
 function convert_min_to_ms(min){
   return Math.floor(min * 60 * 1000);
 };
@@ -27,6 +27,7 @@ function get_diff_by_minute_number(num1,num2){
   return Math.min( bigger - smaller, 60 - bigger + smaller );
 };
 
+// private : get spawn duration by type
 function get_spawn_duration(type){
   var ret;
   switch(type){
@@ -44,6 +45,50 @@ function get_spawn_duration(type){
       ret = moment.duration(time15minInMs);
       break;
   };
+
+  return ret;
+};
+
+// private : given now(moment), spawn duration and spawn time in min to deduce nearest spawn time
+function get_nearest_spawn_time(spawn_duration, spawn_point_time_in_min, now){
+  debug(`get_nearest_spawn_time([spawn_duration:${spawn_duration}], [spawn_point_time_in_min:${spawn_point_time_in_min}], [now:${now}])`);
+  var spawn_time = now;
+  var cur_min = now.minute();
+  if(cur_min - spawn_point_time_in_min< 0){
+    spawn_time.subtract(spawn_duration);
+    spawn_time.startOf('hour');
+    spawn_time.add(moment.duration( convert_min_to_ms(spawn_point_time_in_min )));
+  }
+  else{
+    spawn_time.minute(spawn_point_time_in_min);
+  }
+  return spawn_time;
+};
+
+// priate: deduce spawn time by type and now (moment)
+function get_nearest_spawn_time_by_type(spawn_point_time_in_min, type, now){
+  var ret = 0;
+  var spawnDuration = get_spawn_duration(type);
+
+  if(type === SPAWN_2x15){
+    var second_spawn_point_time_in_min = (spawn_point_time_in_min + 30) %60;
+
+    var curMin = now.minute();
+
+    if( get_diff_by_minute_number(curMin, spawn_point_time_in_min)
+          <  get_diff_by_minute_number(curMin, second_spawn_point_time_in_min)){
+      debug(`[+] using primary spawn time for type_201`);
+      ret = get_nearest_spawn_time(spawnDuration, spawn_point_time_in_min, now);
+    }
+    else{
+      debug(`[+] using secondary spawn time for type_201`);
+      ret = get_nearest_spawn_time(spawnDuration, second_spawn_point_time_in_min, now);
+    }
+  }
+  else{
+    // others
+    ret = get_nearest_spawn_time(spawnDuration, spawn_point_time_in_min, now);
+  }
 
   return ret;
 };
@@ -85,7 +130,7 @@ class SpawnTime{
 class Spawn{
 
   constructor(last_modified_time, spawnPointTime, type, nowProvider){
-    debug(`parameters: [last_modified_time:${last_modified_time}] [spawnPointTime:${spawnPointTime}] [type:${type}]`)
+
     var mod = moment(last_modified_time).startOf('hour').add(moment.duration(spawnPointTime * 60000));
 
     if(nowProvider){
@@ -96,7 +141,8 @@ class Spawn{
         return moment();
       }
     }
-    this.startTime = this.get_nearest_spawn_time_by_type(spawnPointTime,type);
+    debug(`parameters: [last_modified_time:${last_modified_time}] [spawnPointTime:${spawnPointTime}] [type:${type}] [now:${this.getNow().toString()}]`);
+    this.startTime = get_nearest_spawn_time_by_type(spawnPointTime,type, this.getNow());
     this.spawn_type = type;
     this.spawnPointTime = spawnPointTime;
   }
@@ -117,7 +163,7 @@ class Spawn{
     });
 
     if(this.spawn_type === SPAWN_2x15 &&spawn_time.length!=2){
-      ret += `\nDEFECT_201`;
+      ret += `\n#DEFECT_201`;
     }
     return ret;
   };
@@ -126,42 +172,7 @@ class Spawn{
 
 
 
-  get_nearest_spawn_time(spawn_duration, spawn_point_time_in_ms){
-    var spawn_time = this.getNow();
-    spawn_time.subtract(spawn_duration);
-    spawn_time.startOf('hour');
-    spawn_time.add(moment.duration(spawn_point_time_in_ms));
-    return spawn_time;
-  };
 
-
-  get_nearest_spawn_time_by_type(spawn_point_time_in_min, type){
-    var ret = 0;
-    var spawnDuration = get_spawn_duration(type);
-    var spawn_time_in_ms = convert_min_to_ms(spawn_point_time_in_min);
-
-    if(type === SPAWN_2x15){
-      var second_spawn_point_time_in_min = (spawn_point_time_in_min + 30) %60;
-
-      var curMin = this.getNow().minute();
-
-      if( get_diff_by_minute_number(curMin, spawn_point_time_in_min)
-            <  get_diff_by_minute_number(curMin, second_spawn_point_time_in_min)){
-        debug(`[+] using primary spawn time for type_201`);
-        ret = this.get_nearest_spawn_time(spawnDuration, spawn_time_in_ms);
-      }
-      else{
-        debug(`[+] using secondary spawn time for type_201`);
-        ret = this.get_nearest_spawn_time(spawnDuration, convert_min_to_ms(second_spawn_point_time_in_min));
-      }
-    }
-    else{
-      // others
-      ret = this.get_nearest_spawn_time(spawnDuration, spawn_time_in_ms);
-    }
-
-    return ret;
-  }
 
   cal_spawn_time(){
     var ret = [];
