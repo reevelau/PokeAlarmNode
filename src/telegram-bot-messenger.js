@@ -32,7 +32,7 @@ class TelegramBotMessenger{
     debug('[+] handle pokemon spawn');
 
     return new Promise(function(resolve,reject){
-      this.bot.sendLocation(this.chat_id, pokemon.latitude, pokemon.longitude)
+      this.bot.sendLocation(this.chat_id, pokemon.latitude, pokemon.longitude, {disable_notification: true})
         .then((success)=>{
           debug(`[+] finish sending map`);
 
