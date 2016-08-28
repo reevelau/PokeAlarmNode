@@ -55,7 +55,7 @@ class PokemonInfo{
               if(cur.config !== 'False')
                 debug(`[+] Pokemon [${cur.name}] is [${cur.config}]`);
             }
-            
+
             resolve();
           }
           else{
@@ -72,12 +72,24 @@ class PokemonInfo{
 
   }
 
+
+  isValid(id){
+    if(0<id && id<this.current_active_number){
+      return true;
+    }
+    else{
+      debug(`[-] pokemon id ${id} out of range`);
+      return false;
+    }
+  }
+
   getPokemonName(id){
     return this.pokeInfoStore[id].name;
   }
 
+
   isEnabled(id){
-    if(0<id && id<this.current_active_number){
+    if(isValid(id)){
       if(this.pokeInfoStore[id].config.toLowerCase().indexOf('false') !== -1){
         return false;
       }
@@ -85,13 +97,18 @@ class PokemonInfo{
         return true;
       }
     }
-    else{
-      debug(`[-] pokemon id ${id} out of range`);
-    }
 
     return false;
   }
 
+  isNotify(id){
+    if(isValid(id)){
+      if(this.pokeInfoStore[id].config.toLowerCase().indexOf('notify') !== -1){
+        return true;
+      }
+    }
+    return false;
+  }
 };
 
 module.exports = PokemonInfo;

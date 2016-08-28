@@ -124,6 +124,7 @@ co(function*(){
           id : pokeId,
           name: pokeInfo.getPokemonName(pokeId),
           enable : enable,
+          notify: pokeInfo.isNotify(pokeId);
           latitude: body.message.latitude,
           longitude: body.message.longitude,
           geoCoderAddr: yield geocoder.reverse({lat:body.message.latitude, lon:body.message.longitude}),
