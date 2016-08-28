@@ -19,9 +19,9 @@ class TelegramBotMessenger{
 			"body": "to <12h_time> (<time_left> remains)!"
 		}
     */
-    debug('[+] creating telegram bot');
-    this.bot_token = config.bot_token || '239593793:AAHw32Ug9h3X2n9K5tn9gJpVBVqFxr30Vag';
-    this.chat_id = config.chat_id || '@twcustome1';
+    debug(`[+] creating telegram bot [chat_id:${config.chat_id}]`);
+    this.bot_token = config.bot_token;
+    this.chat_id = config.chat_id ;
     this.bot = new TelegramBot(telegram_token, {polling: false});
     debug('[+] creating telegram bot done');
   }
