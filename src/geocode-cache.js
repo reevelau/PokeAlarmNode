@@ -32,7 +32,11 @@ class GeocodeCache{
         _self.geocoder.reverse({lat:latitude, lon:longitude})
           .then(success=>{
             debug(`response from server`);
-            cache.put(cachekey, success);
+
+            if( Array.isArray(success) && success.length >0){
+              cache.put(cachekey, success);
+              debug(`server return ${success} but no a array with at least 1 element`);
+            }
             resolve(success, false);
           },failed=>{
             reject(failed)
