@@ -1,7 +1,7 @@
 'use strict';
 var expect    = require("chai").expect;
 var Gecode = require('../src/geocode-cache.js');
-var coder = new Gecode();
+var coder = new Gecode({language:'zh-TW', apiKey: null});
 
 describe("Geocoder cache", function() {
   it('should cache miss, check log messsage', function(){

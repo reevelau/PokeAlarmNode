@@ -20,6 +20,7 @@ var PokemonInfo = require('./pokemon-info.js');
 var Messenger = require('./telegram-bot-messenger.js');
 
 var alarmConfig = config.get('alarms')[0];
+var geocodeConfig = config.get('geocoder')||{};
 
 var spawnpointfile = 'spawn_point_store.json';
 
@@ -35,7 +36,7 @@ pokeInfo.initialize('./config/default.json', 'zh_hk').then(()=>{
 
 
 var GecodeCache = require('../src/geocode-cache.js');
-var geocoder = new GecodeCache();
+var geocoder = new GecodeCache(geocodeConfig);
 
 var bot = new Messenger(
   {

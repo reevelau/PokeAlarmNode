@@ -7,13 +7,15 @@ var NodeGeocoder = require('node-geocoder');
 
 
 class GeocodeCache{
-  constructor(options){
+  constructor(op){
     var options = {
       provider: 'google',
       // Optional depending on the providers
       httpAdapter: 'https', // Default
-      language: 'zh-TW'
+      language: op.language || 'zh-TW',
+      apiKey: op.apiKey || null
     };
+    debug(`language: ${op.language}, apiKey: ${op.apiKey}`);
     this.geocoder = NodeGeocoder(options);
   }
 
