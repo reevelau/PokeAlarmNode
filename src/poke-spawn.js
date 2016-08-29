@@ -54,7 +54,8 @@ function get_nearest_spawn_time(spawn_duration, spawn_point_time_in_min, now){
   //debug(`get_nearest_spawn_time([spawn_duration:${spawn_duration}], [spawn_point_time_in_min:${spawn_point_time_in_min}], [now:${now}])`);
   var spawn_time = now;
   var cur_min = now.minute();
-  if(cur_min - spawn_point_time_in_min< 0){
+  var spawn_min = Math.floor(spawn_point_time_in_min);
+  if(cur_min - spawn_min< 0){
     spawn_time.subtract(spawn_duration);
     spawn_time.startOf('hour');
     spawn_time.add(moment.duration( convert_min_to_ms(spawn_point_time_in_min )));
@@ -173,8 +174,7 @@ class Spawn{
     var start,duration;
     var time15minInMs = 15 * 60 * 1000;
     switch(this.spawn_type){
-      case 1:
-        break;
+
       case 101:
         start = moment(this.startTime);
         duration = moment.duration(time15minInMs); // 15min
@@ -215,7 +215,7 @@ class Spawn{
         break;
       default: // for type 1, -1 and other
 
-        start= moment(this.last_modified_time),
+        start= moment(this.startTime),
         duration= moment.duration(15 * 60 * 1000) // 15min
         ret.push(new SpawnTime(start, duration, this.getNow));
         break;

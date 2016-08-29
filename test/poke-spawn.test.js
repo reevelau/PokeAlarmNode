@@ -8,7 +8,7 @@ console.log(Spawn);
 
 
 describe("Spawn Time Calculation", function() {
-  describe("Type 201", function() {
+  describe("Tests", function() {
     it("should handle last modified time at adjacent segment properly at specific time", function() {
       //prepare
       // Sat Aug 27 2016 23:59:54 GMT+0800
@@ -93,15 +93,17 @@ describe("Spawn Time Calculation", function() {
       }
     });
 
-    it('should handle spawn time which close in previous hour, type 101', function(){
-      var now = moment('2016-08-26 00:01:00.000');
-      var start = moment('2016-08-25 23:59:00.000');
-      var currentmin = start.minute();
+    it('should handle spawn time for type 101', function(){
+      for(var min = 0; min < 60; min++){
+        var now = moment('2016-08-26 00:01:00.000').minute(min);
+        var start = moment('2016-08-25 23:59:00.000').minute(min -1);
+        var currentmin = start.minute();
 
-      var spawn = new Spawn(start.valueOf(),currentmin,101, function(){return moment('2016-08-26 00:01:00.000');});
-      var output = spawn.toString();
-      //console.log(output);
-      expect(output.indexOf('To')).not.equal(-1);
+        var spawn = new Spawn(now.valueOf(),currentmin,101, function(){return moment('2016-08-26 00:01:00.000').minute(min);});
+        var output = spawn.toString();
+        console.log(output);
+        expect(output.indexOf('To')).not.equal(-1);
+      }
     });
 
     it('should handle spawn time which close in previous hour, type 102', function(){
@@ -109,7 +111,7 @@ describe("Spawn Time Calculation", function() {
       var start = moment('2016-08-25 23:59:00.000');
       var currentmin = start.minute();
 
-      var spawn = new Spawn(start.valueOf(),currentmin,102, function(){return moment('2016-08-26 00:01:00.000');});
+      var spawn = new Spawn(now.valueOf(),currentmin,102, function(){return moment('2016-08-26 00:01:00.000');});
       var output = spawn.toString();
       //console.log(output);
       expect(output.indexOf('To')).not.equal(-1);
@@ -120,7 +122,7 @@ describe("Spawn Time Calculation", function() {
       var start = moment('2016-08-25 23:59:00.000');
       var currentmin = start.minute();
 
-      var spawn = new Spawn(start.valueOf(),currentmin,103, function(){return moment('2016-08-26 00:01:00.000');});
+      var spawn = new Spawn(now.valueOf(),currentmin,103, function(){return moment('2016-08-26 00:01:00.000');});
       var output = spawn.toString();
       //console.log(output);
       expect(output.indexOf('To')).not.equal(-1);
@@ -131,9 +133,41 @@ describe("Spawn Time Calculation", function() {
       var start = moment('2016-08-25 23:59:00.000');
       var currentmin = start.minute();
 
-      var spawn = new Spawn(start.valueOf(),currentmin,104, function(){return moment('2016-08-26 00:01:00.000');});
+      var spawn = new Spawn(now.valueOf(),currentmin,104, function(){return moment('2016-08-26 00:01:00.000');});
       var output = spawn.toString();
       //console.log(output);
+      expect(output.indexOf('To')).not.equal(-1);
+    });
+
+    it('should handle spawn time which close in previous hour, type 1', function(){
+      var now = moment('2016-08-26 00:01:00.000');
+      var start = moment('2016-08-25 23:59:00.000');
+      var currentmin = start.minute();
+
+      var spawn = new Spawn(now.valueOf(),currentmin,1, function(){return moment('2016-08-26 00:01:00.000');});
+      var output = spawn.toString();
+      //console.log(output);
+      expect(output.indexOf('To')).not.equal(-1);
+    });
+
+    it('should handle spawn time which close in previous hour, type -1', function(){
+      var now = moment('2016-08-26 00:01:00.000');
+      var start = moment('2016-08-25 23:59:00.000');
+      var currentmin = start.minute();
+
+      var spawn = new Spawn(now.valueOf(),currentmin,1, function(){return moment('2016-08-26 00:01:00.000');});
+      var output = spawn.toString();
+      //console.log(output);
+      expect(output.indexOf('To')).not.equal(-1);
+    });
+
+    it('should special case correctly', function(){
+      var now = moment('2016-08-26 00:01:00.000').hour(18).minute(2).second(59);
+      var currentmin = 2.816600002348423;
+
+      var spawn = new Spawn(now.valueOf(),currentmin,101, function(){return moment(now.valueOf());});
+      var output = spawn.toString();
+      console.log(output);
       expect(output.indexOf('To')).not.equal(-1);
     });
   });

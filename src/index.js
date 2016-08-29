@@ -33,13 +33,9 @@ pokeInfo.initialize('./config/default.json', 'zh_hk').then(()=>{
   debug(`[+] reading pokemon information done`);
 });
 
-var options = {
-  provider: 'google',
-  // Optional depending on the providers
-  httpAdapter: 'https', // Default
-  language: 'zh-TW'
-};
-var geocoder = NodeGeocoder(options);
+
+var GecodeCache = require('../src/geocode-cache.js');
+var geocoder = new GecodeCache();
 
 var bot = new Messenger(
   {
@@ -127,7 +123,7 @@ co(function*(){
           notify: pokeInfo.isNotify(pokeId),
           latitude: body.message.latitude,
           longitude: body.message.longitude,
-          geoCoderAddr: yield geocoder.reverse({lat:body.message.latitude, lon:body.message.longitude}),
+          geoCoderAddr: yield geocoder.reverse(body.message.latitude, body.message.longitude),
           last_modified_time: body.message.last_modified_time,
           time_until_hidden_ms: body.message.time_until_hidden_ms,
           disappear_time: body.message.disappear_time,
