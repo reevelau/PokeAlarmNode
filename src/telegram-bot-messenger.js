@@ -48,8 +48,8 @@ class TelegramBotMessenger{
 
         },
         (failed)=>{
-          debug(`[-] failed sending map ${error}`);
-          reject(error);
+          debug(`[-] failed sending map ${failed}`);
+          reject(failed);
         }
       );
 
