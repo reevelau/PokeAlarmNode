@@ -55,8 +55,8 @@ describe("Spawn Time Calculation", function() {
 
       for(var min = 0; min < 60; min++){
         var now = moment().minute(min);
-        console.log(now.toString());
-        var start = moment().minute(min).subtract(moment.duration(1000 * 3));
+        //console.log(now.toString());
+        var start = moment().minute(min);
         var currentmin = start.minute()
 
         // the spawn time will always in adjacent time segment
@@ -65,7 +65,7 @@ describe("Spawn Time Calculation", function() {
 
         var spawn = new Spawn(start.valueOf(),spawnMin,201, function(){return moment().minute(min);}); // type 201
         var output = spawn.toString();
-        console.log(output);
+        //console.log(output);
         expect(output.indexOf('To')).not.equal(-1);
         expect(output.indexOf('Next')).equal(-1);
         expect(output.indexOf('DEFECT_201')).not.equal(-1);
@@ -77,8 +77,8 @@ describe("Spawn Time Calculation", function() {
     it("should handle last modified time at same segment properly at any time", function() {
       for(var min = 0; min < 60; min++){
         var now = moment().minute(min);
-        console.log(now.toString());
-        var start = moment().minute(min).subtract(moment.duration(1000 * 3));
+        //console.log(now.toString());
+        var start = moment().minute(min);
         var currentmin = start.minute()
 
         // the spawn time will always in adjacent time segment
@@ -87,7 +87,7 @@ describe("Spawn Time Calculation", function() {
 
         var spawn = new Spawn(start.valueOf(),spawnMin,201, function(){return moment().minute(min);}); // type 201
         var output = spawn.toString();
-        console.log(output);
+        //console.log(output);
         expect(output.indexOf('To')).not.equal(-1);
         expect(output.indexOf('Next')).not.equal(-1);
       }
@@ -100,7 +100,7 @@ describe("Spawn Time Calculation", function() {
 
       var spawn = new Spawn(start.valueOf(),currentmin,101, function(){return moment('2016-08-26 00:01:00.000');});
       var output = spawn.toString();
-      console.log(output);
+      //console.log(output);
       expect(output.indexOf('To')).not.equal(-1);
     });
 
@@ -111,7 +111,7 @@ describe("Spawn Time Calculation", function() {
 
       var spawn = new Spawn(start.valueOf(),currentmin,102, function(){return moment('2016-08-26 00:01:00.000');});
       var output = spawn.toString();
-      console.log(output);
+      //console.log(output);
       expect(output.indexOf('To')).not.equal(-1);
     });
 
@@ -122,7 +122,7 @@ describe("Spawn Time Calculation", function() {
 
       var spawn = new Spawn(start.valueOf(),currentmin,103, function(){return moment('2016-08-26 00:01:00.000');});
       var output = spawn.toString();
-      console.log(output);
+      //console.log(output);
       expect(output.indexOf('To')).not.equal(-1);
     });
 
@@ -133,7 +133,7 @@ describe("Spawn Time Calculation", function() {
 
       var spawn = new Spawn(start.valueOf(),currentmin,104, function(){return moment('2016-08-26 00:01:00.000');});
       var output = spawn.toString();
-      console.log(output);
+      //console.log(output);
       expect(output.indexOf('To')).not.equal(-1);
     });
   });

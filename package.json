@@ -4,10 +4,10 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "mocha --reporter spec",
+    "test": "export DEBUG=poke-spawn;mocha --reporter spec",
     "start": "export DEBUG=main;nodemon src/index.js --exec babel-node",
     "build": "babel src -d dist",
-    "serve": "export DEBUG=main,telegram-bot-messenger;node ./src/index.js"
+    "serve": "export DEBUG=main,poke-spawn;node ./src/index.js"
   },
   "author": "",
   "license": "ISC",

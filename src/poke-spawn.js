@@ -51,7 +51,7 @@ function get_spawn_duration(type){
 
 // private : given now(moment), spawn duration and spawn time in min to deduce nearest spawn time
 function get_nearest_spawn_time(spawn_duration, spawn_point_time_in_min, now){
-  debug(`get_nearest_spawn_time([spawn_duration:${spawn_duration}], [spawn_point_time_in_min:${spawn_point_time_in_min}], [now:${now}])`);
+  //debug(`get_nearest_spawn_time([spawn_duration:${spawn_duration}], [spawn_point_time_in_min:${spawn_point_time_in_min}], [now:${now}])`);
   var spawn_time = now;
   var cur_min = now.minute();
   if(cur_min - spawn_point_time_in_min< 0){
@@ -69,7 +69,7 @@ function get_nearest_spawn_time(spawn_duration, spawn_point_time_in_min, now){
 function get_nearest_spawn_time_by_type(spawn_point_time_in_min, type, now){
   var ret = 0;
   var spawnDuration = get_spawn_duration(type);
-
+  debug(`get_nearest_spawn_time_by_type([spawn_point_time_in_min:${spawn_point_time_in_min}],[type:${type}],[now:${now.toString()}])`);
   if(type === SPAWN_2x15){
     var second_spawn_point_time_in_min = (spawn_point_time_in_min + 30) %60;
 
@@ -89,7 +89,7 @@ function get_nearest_spawn_time_by_type(spawn_point_time_in_min, type, now){
     // others
     ret = get_nearest_spawn_time(spawnDuration, spawn_point_time_in_min, now);
   }
-
+  debug(`get_nearest_spawn_time_by_type [ret:${ret.toString()}]`)
   return ret;
 };
 
@@ -141,7 +141,7 @@ class Spawn{
         return moment(last_modified_time);
       }
     }
-    debug(`parameters: [last_modified_time:${last_modified_time}] [spawnPointTime:${spawnPointTime}] [type:${type}] [now:${this.getNow().toString()}]`);
+    //debug(`parameters: [last_modified_time:${last_modified_time}] [spawnPointTime:${spawnPointTime}] [type:${type}] [now:${this.getNow().toString()}]`);
     this.startTime = get_nearest_spawn_time_by_type(spawnPointTime,type, this.getNow());
     this.spawn_type = type;
     this.spawnPointTime = spawnPointTime;
@@ -167,12 +167,6 @@ class Spawn{
     }
     return ret;
   };
-
-
-
-
-
-
 
   cal_spawn_time(){
     var ret = [];
