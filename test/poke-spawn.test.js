@@ -170,6 +170,17 @@ describe("Spawn Time Calculation", function() {
       console.log(output);
       expect(output.indexOf('To')).not.equal(-1);
     });
+
+    it('should humanize durtion', function(){
+      var spawntime = moment('2016-08-26 00:01:00.000').hour(18).minute(1);
+      var now = moment('2016-08-26 00:01:00.000').hour(18).minute(4).second(30);
+      var currentmin = 1;
+
+      var spawn = new Spawn(spawntime.valueOf(),currentmin,101, function(){return moment(now.valueOf());});
+      var output = spawn.toString();
+      console.log(output);
+      expect(output.indexOf('To')).not.equal(-1);
+    });
   });
 
 });

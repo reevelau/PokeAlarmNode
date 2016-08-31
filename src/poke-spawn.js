@@ -139,7 +139,7 @@ class Spawn{
     }
     else{
       this.getNow = function(){
-        return moment(last_modified_time);
+        return moment();
       }
     }
     //debug(`parameters: [last_modified_time:${last_modified_time}] [spawnPointTime:${spawnPointTime}] [type:${type}] [now:${this.getNow().toString()}]`);
@@ -155,8 +155,9 @@ class Spawn{
     spawn_time.forEach((time)=>{
       if(time.isWithin()){
         var remains = Math.floor(time.remainings().asMilliseconds() /1000) *1000;
-
-        ret += `To: ${time.end.format('h:mm:ss a')} (${humanizeDuration(remains)} remains)`;
+        console.log(remains)
+        var dura =   humanizeDuration(remains);
+        ret += `To: ${time.end.format('h:mm:ss a')} (${dura} remains)`;
       }
       else{
         ret += `\nNext: (start:${time.start.format('h:mm:ss a')}) (end:${time.end.format('h:mm:ss a')})`;

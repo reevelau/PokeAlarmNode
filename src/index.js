@@ -47,13 +47,15 @@ var bot = new Messenger(
 
 var queue = new Queue();
 
+
 function * messageHandler(pokemon){
   if(pokemon.enable){
     var timeInfo = '';
     var stype = 'not_found';
 
     var spawnp = spawnPointStore.getSpawnPointById(pokemon.spawnpointId);
-    if(spawnp){
+    if(spawnp && spawnp.type != -1 && spawnp.type != 1){
+
       stype = spawnp.type;
       var spawn = new Spawn(pokemon.last_modified_time, spawnp.spawntime,  spawnp.type);
       timeInfo = spawn.toString();
