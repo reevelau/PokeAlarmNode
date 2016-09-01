@@ -3,6 +3,9 @@ var expect    = require("chai").expect;
 var Spawn = require('../src/poke-spawn.js');
 var moment = require('moment');
 
+var config = require('config');
+var translation = config.get('translation');
+
 console.log(Spawn);
 
 
@@ -23,8 +26,8 @@ describe("Spawn Time Calculation", function() {
       var spawn = new Spawn(start.valueOf(),0,0,spawnMin,201, function(){return moment(1472313594451);}); // type 201
       var output = spawn.toString();
       console.log(output);
-      expect(output.indexOf('To')).not.equal(-1);
-      expect(output.indexOf('Next')).equal(-1);
+      expect(output.indexOf(translation.primary_time_prefix)).not.equal(-1);
+      expect(output.indexOf(translation.secondary_time_prefix)).equal(-1);
 
       expect(output.indexOf('DEFECT_201')).not.equal(-1);
     });
@@ -43,8 +46,9 @@ describe("Spawn Time Calculation", function() {
       var spawn = new Spawn(start.valueOf(),0,0,spawnMin,201, function(){return moment(1472313594451);}); // type 201
       var output = spawn.toString();
       console.log(output);
-      expect(output.indexOf('To')).not.equal(-1);
-      expect(output.indexOf('Next')).not.equal(-1);
+
+      expect(output.indexOf(translation.primary_time_prefix)).not.equal(-1);
+      expect(output.indexOf(translation.secondary_time_prefix)).not.equal(-1);
 
     });
 
@@ -66,8 +70,9 @@ describe("Spawn Time Calculation", function() {
         var spawn = new Spawn(start.valueOf(),0,0,spawnMin,201, function(){return moment().minute(min);}); // type 201
         var output = spawn.toString();
         //console.log(output);
-        expect(output.indexOf('To')).not.equal(-1);
-        expect(output.indexOf('Next')).equal(-1);
+        expect(output.indexOf(translation.primary_time_prefix)).not.equal(-1);
+        expect(output.indexOf(translation.secondary_time_prefix)).equal(-1);
+
         expect(output.indexOf('DEFECT_201')).not.equal(-1);
       }
 
@@ -88,8 +93,8 @@ describe("Spawn Time Calculation", function() {
         var spawn = new Spawn(start.valueOf(),0,0,spawnMin,201, function(){return moment().minute(min);}); // type 201
         var output = spawn.toString();
         //console.log(output);
-        expect(output.indexOf('To')).not.equal(-1);
-        expect(output.indexOf('Next')).not.equal(-1);
+        expect(output.indexOf(translation.primary_time_prefix)).not.equal(-1);
+        expect(output.indexOf(translation.secondary_time_prefix)).not.equal(-1);
       }
     });
 
@@ -102,7 +107,7 @@ describe("Spawn Time Calculation", function() {
         var spawn = new Spawn(now.valueOf(),0,0,currentmin,101, function(){return moment('2016-08-26 00:01:00.000').minute(min);});
         var output = spawn.toString();
         console.log(output);
-        expect(output.indexOf('To')).not.equal(-1);
+        expect(output.indexOf(translation.primary_time_prefix)).not.equal(-1);
       }
     });
 
@@ -114,7 +119,7 @@ describe("Spawn Time Calculation", function() {
       var spawn = new Spawn(now.valueOf(),0,0,currentmin,102, function(){return moment('2016-08-26 00:01:00.000');});
       var output = spawn.toString();
       //console.log(output);
-      expect(output.indexOf('To')).not.equal(-1);
+      expect(output.indexOf(translation.primary_time_prefix)).not.equal(-1);
     });
 
     it('should handle spawn time which close in previous hour, type 103', function(){
@@ -125,7 +130,7 @@ describe("Spawn Time Calculation", function() {
       var spawn = new Spawn(now.valueOf(),0,0,currentmin,103, function(){return moment('2016-08-26 00:01:00.000');});
       var output = spawn.toString();
       //console.log(output);
-      expect(output.indexOf('To')).not.equal(-1);
+      expect(output.indexOf(translation.primary_time_prefix)).not.equal(-1);
     });
 
     it('should handle spawn time which close in previous hour, type 104', function(){
@@ -136,7 +141,7 @@ describe("Spawn Time Calculation", function() {
       var spawn = new Spawn(now.valueOf(),0,0,currentmin,104, function(){return moment('2016-08-26 00:01:00.000');});
       var output = spawn.toString();
       //console.log(output);
-      expect(output.indexOf('To')).not.equal(-1);
+      expect(output.indexOf(translation.primary_time_prefix)).not.equal(-1);
     });
 
     it('should handle spawn time which close in previous hour, type 1', function(){
@@ -147,7 +152,7 @@ describe("Spawn Time Calculation", function() {
       var spawn = new Spawn(now.valueOf(),0,0,currentmin,1, function(){return moment('2016-08-26 00:01:00.000');});
       var output = spawn.toString();
       //console.log(output);
-      expect(output.indexOf('* end')).not.equal(-1);
+      expect(output.indexOf(translation.exceptional_time_prefix)).not.equal(-1);
     });
 
     it('should handle spawn time which close in previous hour, type -1', function(){
@@ -158,7 +163,7 @@ describe("Spawn Time Calculation", function() {
       var spawn = new Spawn(now.valueOf(),0,0,currentmin,-1, function(){return moment('2016-08-26 00:01:00.000');});
       var output = spawn.toString();
       console.log(output);
-      expect(output.indexOf('* end')).not.equal(-1);
+      expect(output.indexOf(translation.exceptional_time_prefix)).not.equal(-1);
     });
 
     it('should special case correctly', function(){
@@ -168,7 +173,7 @@ describe("Spawn Time Calculation", function() {
       var spawn = new Spawn(now.valueOf(),0,0,currentmin,101, function(){return moment(now.valueOf());});
       var output = spawn.toString();
       console.log(output);
-      expect(output.indexOf('To')).not.equal(-1);
+      expect(output.indexOf(translation.primary_time_prefix)).not.equal(-1);
     });
 
     it('should humanize durtion', function(){
@@ -179,7 +184,7 @@ describe("Spawn Time Calculation", function() {
       var spawn = new Spawn(spawntime.valueOf(),0,0,currentmin,101, function(){return moment(now.valueOf());});
       var output = spawn.toString();
       console.log(output);
-      expect(output.indexOf('To')).not.equal(-1);
+      expect(output.indexOf(translation.primary_time_prefix)).not.equal(-1);
     });
   });
 

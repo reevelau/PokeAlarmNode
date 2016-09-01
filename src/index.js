@@ -27,9 +27,10 @@ var MessageProcessor = require('./message-processor.js');
 
 var alarmConfig = config.get('alarms')[0];
 var geocodeConfig = config.get('geocoder')||{};
+var translation = config.get('translation');
 
 var pokeInfo = new PokemonInfo();
-pokeInfo.initialize('./config/default.json', 'zh_hk').then(()=>{
+pokeInfo.initialize('./config/default.json', translation.pokemon_language).then(()=>{
   debug(`[+] reading pokemon information done`);
 });
 

@@ -1,9 +1,19 @@
 'use strict';
 
 var moment = require('moment');
+var config = require('config');
+var translation = config.get('translation');
+
+
+moment.locale(translation.moment_language);
 var _ = require('lodash');
 var debug = require('debug')('poke-spawn');
-var humanizeDuration = require('humanize-duration');
+var HumanizeDuration = require('humanize-duration');
+
+var humanizeDuration = HumanizeDuration.humanizer({
+  language: translation.humanize_duration_language
+});
+
 const SPAWN_UNDEF = -1,
   SPAWN_DEF = 1,
   SPAWN_1x0 = 100,
@@ -137,8 +147,9 @@ class RemainingTime{
   toString(){
     var remains = moment.duration(this.time_until_hidden_ms);
     var disappear = moment.unix(this.disappear_time);
-
-     return `* end: ${disappear.format('h:mm:ss a')} (${remains.humanize()})`;
+    var dura =   humanizeDuration(remains);
+    var timeformat = translation.exceptional_time_format;
+    return `${translation.exceptional_time_prefix}: ${disappear.format(timeformat)} (${translation.time_remains} ${dura})`;
   }
 }
 
@@ -175,10 +186,13 @@ class Spawn{
         if(time.isWithin()){
           var remains = Math.floor(time.remainings().asMilliseconds() /1000) *1000;
           var dura =   humanizeDuration(remains);
-          ret += `To: ${time.end.format('h:mm:ss a')} (${dura} remains)`;
+          var timeformat = translation.primar_time_format;
+          ret += `${translation.primary_time_prefix}: ${time.end.format(timeformat)} (${translation.time_remains} ${dura})`;
         }
         else{
-          ret += `\nNext: (start:${time.start.format('h:mm:ss a')}) (end:${time.end.format('h:mm:ss a')})`;
+          var start_timef= translation.secondary_time_1_format;
+          var end_timef = translation.secondary_time_2_format;
+          ret += `\n${translation.secondary_time_prefix}: (${time.start.format(start_timef)}) (${time.end.format(end_timef)})`;
         }
       }
       else{
