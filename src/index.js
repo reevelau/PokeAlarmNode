@@ -64,13 +64,13 @@ function * messageHandler(pokemon){
       var remains = moment.duration(pokemon.time_until_hidden_ms);
       var disappear = moment.unix(pokemon.disappear_time);
 
-      timeInfo = `* end: ${disappear.format('h:mm:ss a')} (${remains.humanize()})`;
+      timeInfo = `* To: ${disappear.format('h:mm:ss a')} (${remains.humanize()})`;
       debug(`Spawn point not found: ${body.message}`);
     }
 
-    pokemon.message = `<code>${pokemon.name}</code> (${pokemon.id}) @${pokemon.geoCoderAddr[0].streetName}\n${timeInfo}\n`;
-    pokemon.message += `https://www.google.com/maps?q=${pokemon.latitude},${pokemon.longitude}\n`;
-    pokemon.message += `#${pokemon.name} #${pokemon.geoCoderAddr[0].streetName}`;
+    pokemon.message = `<code>${pokemon.name}</code> (${pokemon.id}) @<a href="https://maps.google.com/maps?q=${pokemon.latitude},${pokemon.longitude}">${pokemon.geoCoderAddr[0].streetName}</a>\n`;
+    pokemon.message += `${timeInfo}\n`;
+    pokemon.message += `#${pokemon.name} #${pokemon.geoCoderAddr[0].streetName || 'none'}\n`;
     pokemon.message += `\n`;
     pokemon.message += `#e${pokemon.encounter_id.toString(16)} #type${stype} #ss${pokemon.spawnpointId}`
 
