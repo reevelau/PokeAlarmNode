@@ -10,7 +10,7 @@ var moment = require('moment');
 var cache = require('memory-cache');
 var is = require('is_js');
 var atob = require('atob');
-
+var bigInt = require('big-integer');
 
 var NodeGeocoder = require('node-geocoder');
 
@@ -114,6 +114,7 @@ co(function*(){
             "longitude": 114.18002367787557
           },
           "type": "pokemon"
+        }
         */
 
 
@@ -131,12 +132,10 @@ co(function*(){
           time_until_hidden_ms: body.message.time_until_hidden_ms,
           disappear_time: body.message.disappear_time,
           spawnpointId: parseInt(body.message.spawnpoint_id,16),
-          encounter_id: parseInt(atob(body.message.encounter_id),10),
+          encounter_id: bigInt(atob(body.message.encounter_id),10).toString(16),
           message: ''
         };
-
         yield messageHandler(pokemon);
-
       }
     }
     catch(e){

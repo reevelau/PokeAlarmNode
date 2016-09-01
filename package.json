@@ -14,6 +14,7 @@
   "dependencies": {
     "atob": "^2.0.3",
     "babel-connect": "^6.0.2",
+    "big-integer": "^1.6.15",
     "body-parser": "^1.15.2",
     "chai": "^3.5.0",
     "co": "^4.6.0",
