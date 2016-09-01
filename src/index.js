@@ -14,26 +14,24 @@ var bigInt = require('big-integer');
 
 var NodeGeocoder = require('node-geocoder');
 
-var Spawn = require('./poke-spawn.js');
-var SpawnPointInfo = require('./spawn-point-info.js');
-var PokemonInfo = require('./pokemon-info.js');
-var Messenger = require('./telegram-bot-messenger.js');
-
-var alarmConfig = config.get('alarms')[0];
-var geocodeConfig = config.get('geocoder')||{};
-
 var spawnpointfile = 'spawn_point_store.json';
-
+var SpawnPointInfo = require('./spawn-point-info.js');
 var spawnPointStore = new SpawnPointInfo(spawnpointfile);
 spawnPointStore.initialize().then(success=>{
   debug(`[+] spawn point file loaded`)
 });
 
+var PokemonInfo = require('./pokemon-info.js');
+var Messenger = require('./telegram-bot-messenger.js');
+var MessageProcessor = require('./message-processor.js');
+
+var alarmConfig = config.get('alarms')[0];
+var geocodeConfig = config.get('geocoder')||{};
+
 var pokeInfo = new PokemonInfo();
 pokeInfo.initialize('./config/default.json', 'zh_hk').then(()=>{
   debug(`[+] reading pokemon information done`);
 });
-
 
 var GecodeCache = require('../src/geocode-cache.js');
 var geocoder = new GecodeCache(geocodeConfig);
@@ -46,33 +44,24 @@ var bot = new Messenger(
 );
 
 var queue = new Queue();
+var mprocessor = new MessageProcessor(spawnPointStore);
 
+function * getStreetName(lat,long){
+  var ret = 'none';
+  try{
+    var apiret = yield geocoder.reverse(lat, long);
+    ret = apiret[0].streetName;
+  }
+  catch(e){
+    debug(`failed to resolve ${lat},${long} error ${e}`);
+  }
+  return ret;
+};
 
 function * messageHandler(pokemon){
   if(pokemon.enable){
-    var timeInfo = '';
-    var stype = 'not_found';
 
-    var spawnp = spawnPointStore.getSpawnPointById(pokemon.spawnpointId);
-    if(spawnp && spawnp.type != -1 && spawnp.type != 1){
-
-      stype = spawnp.type;
-      var spawn = new Spawn(pokemon.last_modified_time, spawnp.spawntime,  spawnp.type);
-      timeInfo = spawn.toString();
-    }
-    else{
-      var remains = moment.duration(pokemon.time_until_hidden_ms);
-      var disappear = moment.unix(pokemon.disappear_time);
-
-      timeInfo = `* To: ${disappear.format('h:mm:ss a')} (${remains.humanize()})`;
-      debug(`Spawn point not found: ${body.message}`);
-    }
-
-    pokemon.message = `<code>${pokemon.name}</code> (${pokemon.id}) @<a href="https://maps.google.com/maps?q=${pokemon.latitude},${pokemon.longitude}">${pokemon.geoCoderAddr[0].streetName}</a>\n`;
-    pokemon.message += `${timeInfo}\n`;
-    pokemon.message += `#${pokemon.name} #${pokemon.geoCoderAddr[0].streetName || 'none'}\n`;
-    pokemon.message += `\n`;
-    pokemon.message += `#e${pokemon.encounter_id.toString(16)} #type${stype} #ss${pokemon.spawnpointId}`
+    mprocessor.process(pokemon);
 
     yield bot.handleSpawn(pokemon);
     debug(`[+] ${pokemon.name} notification was triggered.`)
@@ -119,6 +108,7 @@ co(function*(){
 
 
         var enable = pokeInfo.isEnabled(pokeId);
+        var streetName = yield getStreetName(body.message.latitude, body.message.longitude);
 
         var pokemon = {
           id : pokeId,
@@ -127,7 +117,7 @@ co(function*(){
           notify: pokeInfo.isNotify(pokeId),
           latitude: body.message.latitude,
           longitude: body.message.longitude,
-          geoCoderAddr: yield geocoder.reverse(body.message.latitude, body.message.longitude),
+          streetName: streetName,
           last_modified_time: body.message.last_modified_time,
           time_until_hidden_ms: body.message.time_until_hidden_ms,
           disappear_time: body.message.disappear_time,

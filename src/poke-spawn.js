@@ -128,9 +128,23 @@ class SpawnTime{
   }
 };
 
+class RemainingTime{
+  constructor(disappear_time, time_until_hidden_ms){
+    this.disappear_time = disappear_time;
+    this.time_until_hidden_ms = time_until_hidden_ms;
+  }
+
+  toString(){
+    var remains = moment.duration(this.time_until_hidden_ms);
+    var disappear = moment.unix(this.disappear_time);
+
+     return `* end: ${disappear.format('h:mm:ss a')} (${remains.humanize()})`;
+  }
+}
+
 class Spawn{
 
-  constructor(last_modified_time, spawnPointTime, type, nowProvider){
+  constructor(last_modified_time, disappear_time, time_until_hidden_ms, spawnPointTime, type, nowProvider){
 
     var mod = moment(last_modified_time).startOf('hour').add(moment.duration(spawnPointTime * 60000));
 
@@ -146,6 +160,10 @@ class Spawn{
     this.startTime = get_nearest_spawn_time_by_type(spawnPointTime,type, this.getNow());
     this.spawn_type = type;
     this.spawnPointTime = spawnPointTime;
+
+    this.last_modified_time = last_modified_time;
+    this.disappear_time = disappear_time;
+    this.time_until_hidden_ms = time_until_hidden_ms;
   }
 
   toString(){
@@ -153,15 +171,20 @@ class Spawn{
     var ret = '';
 
     spawn_time.forEach((time)=>{
-      if(time.isWithin()){
-        var remains = Math.floor(time.remainings().asMilliseconds() /1000) *1000;
-        console.log(remains)
-        var dura =   humanizeDuration(remains);
-        ret += `To: ${time.end.format('h:mm:ss a')} (${dura} remains)`;
+      if(time instanceof SpawnTime){
+        if(time.isWithin()){
+          var remains = Math.floor(time.remainings().asMilliseconds() /1000) *1000;
+          var dura =   humanizeDuration(remains);
+          ret += `To: ${time.end.format('h:mm:ss a')} (${dura} remains)`;
+        }
+        else{
+          ret += `\nNext: (start:${time.start.format('h:mm:ss a')}) (end:${time.end.format('h:mm:ss a')})`;
+        }
       }
       else{
-        ret += `\nNext: (start:${time.start.format('h:mm:ss a')}) (end:${time.end.format('h:mm:ss a')})`;
+        ret = time.toString();
       }
+
     });
 
     if(this.spawn_type === SPAWN_2x15 &&spawn_time.length!=2){
@@ -215,10 +238,7 @@ class Spawn{
         }
         break;
       default: // for type 1, -1 and other
-
-        start= moment(this.startTime),
-        duration= moment.duration(15 * 60 * 1000) // 15min
-        ret.push(new SpawnTime(start, duration, this.getNow));
+        ret.push(new RemainingTime(this.disappear_time, this.time_until_hidden_ms));
         break;
     }
 
