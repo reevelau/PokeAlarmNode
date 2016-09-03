@@ -40,8 +40,9 @@ class MessageProcessor {
     pokemon.timeInfo = spawn.toString();
 
     var streetName = pokemon.streetName;
-
-    var msg_id = 'id' + pad(16, getRandomInt(100000,Number.MAX_SAFE_INTEGER).toString(16).toUpperCase(), '0');
+    //#e928e2f0f86a0630d
+    //#id0016CFBDF9407029
+    var msg_id = 'id' + pad(getRandomInt(100000,Number.MAX_SAFE_INTEGER).toString(16).toUpperCase(), 16, ,'D');
 
     pokemon.message = `<b>${pokemon.name} (${pokemon.id})</b> @<a href="https://maps.google.com/maps?q=${pokemon.latitude},${pokemon.longitude}">${streetName}</a>\n`;
     pokemon.message += `${pokemon.timeInfo}\n`;
