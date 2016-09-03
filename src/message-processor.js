@@ -41,7 +41,7 @@ class MessageProcessor {
 
     var streetName = pokemon.streetName;
 
-    var msg_id = 'id' + pad(16, getRandomInt(100000,Number.MAX_VALUE).toString(16), '0');
+    var msg_id = 'id' + pad(16, getRandomInt(100000,Number.MAX_SAFE_INTEGER).toString(16).toUpperCase(), '0');
 
     pokemon.message = `<b>${pokemon.name} (${pokemon.id})</b> @<a href="https://maps.google.com/maps?q=${pokemon.latitude},${pokemon.longitude}">${streetName}</a>\n`;
     pokemon.message += `${pokemon.timeInfo}\n`;
