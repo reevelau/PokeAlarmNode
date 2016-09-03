@@ -1,10 +1,15 @@
 'use strict';
 
 var debug = require('debug')('message-processor');
-
+var debug_main = require('debug')('main');
 var Spawn = require('./poke-spawn.js');
+var pad = require('pad');
 
-
+function getRandomInt(min, max) {
+  min = Math.ceil(min);
+  max = Math.floor(max);
+  return Math.floor(Math.random() * (max - min)) + min;
+}
 
 class MessageProcessor {
   constructor(spawnPointStore){
@@ -36,13 +41,16 @@ class MessageProcessor {
 
     var streetName = pokemon.streetName;
 
+    var msg_id = 'id' + pad(16, getRandomInt(100000,Number.MAX_VALUE).toString(16), '0');
 
     pokemon.message = `<b>${pokemon.name} (${pokemon.id})</b> @<a href="https://maps.google.com/maps?q=${pokemon.latitude},${pokemon.longitude}">${streetName}</a>\n`;
     pokemon.message += `${pokemon.timeInfo}\n`;
     pokemon.message += `#${pokemon.name} #${streetName}\n`;
-    pokemon.message += `\n`;
-    pokemon.message += `#e${pokemon.encounter_id.toString(16)} #type${pokemon.stype} #ss${pokemon.spawnpointId}`;
-
+    pokemon.message += `-----\n`;
+    pokemon.message += `立法會選舉，9月4日請投票(7:30am-10:30pm)!\n`;
+    pokemon.message += `#${msg_id}\n`;
+    //pokemon.message += `#e${pokemon.encounter_id.toString(16)} #type${pokemon.stype} #ss${pokemon.spawnpointId}`;
+    debug_main(`[+] ${msg_id} #e${pokemon.encounter_id.toString(16)} #type${pokemon.stype} #ss${pokemon.spawnpointId}`);
     return ret;
   };
 };

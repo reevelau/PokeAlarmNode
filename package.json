@@ -32,6 +32,7 @@
     "moment": "^2.14.1",
     "node-geocoder": "^3.14.0",
     "node-telegram-bot-api": "^0.23.3",
+    "pad": "^1.0.1",
     "reindex": "^0.1.0"
   },
   "devDependencies": {
