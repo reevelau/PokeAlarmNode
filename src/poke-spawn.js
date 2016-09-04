@@ -145,9 +145,22 @@ class RemainingTime{
   }
 
   toString(){
-    var remains = moment.duration(this.time_until_hidden_ms);
     var disappear = moment.unix(this.disappear_time);
-    var dura =   humanizeDuration(remains);
+    var dura = '';
+
+    var time15minInMs = 15 * 60 * 1000;
+    var remains = this.time_until_hidden_ms;
+    var modified = false;
+
+    if(remains < 0 || remains > 4 * time15minInMs){
+      remains = time15minInMs;
+      modified = true;
+    }
+
+    dura =   humanizeDuration(remains);
+    if(modified)
+      dura += '?';
+
     var timeformat = translation.exceptional_time_format;
     return `${translation.exceptional_time_prefix}: ${disappear.format(timeformat)} (${translation.time_remains} ${dura})`;
   }

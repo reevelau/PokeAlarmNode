@@ -40,18 +40,15 @@ class MessageProcessor {
     pokemon.timeInfo = spawn.toString();
 
     var streetName = pokemon.streetName;
-    //#e928e2f0f86a0630d
-    //#id0016CFBDF9407029
-    var msg_id = 'id' + pad(getRandomInt(100000,Number.MAX_SAFE_INTEGER).toString(16).toUpperCase(), 16, 'D');
 
     pokemon.message = `<b>${pokemon.name} (${pokemon.id})</b> @<a href="https://maps.google.com/maps?q=${pokemon.latitude},${pokemon.longitude}">${streetName}</a>\n`;
     pokemon.message += `${pokemon.timeInfo}\n`;
     pokemon.message += `#${pokemon.name} #${streetName}\n`;
     pokemon.message += `-----\n`;
     pokemon.message += `立法會選舉，9月4日請投票(7:30am-10:30pm)！<a href="http://www.elections.gov.hk/legco2016/chi/introd_gc_nte.html">新界東候選人名單</a>。\n`;
-    pokemon.message += `#${msg_id}\n`;
+    pokemon.message += `#id${pokemon.message_id}\n`;
     //pokemon.message += `#e${pokemon.encounter_id.toString(16)} #type${pokemon.stype} #ss${pokemon.spawnpointId}`;
-    debug_main(`[+] ${msg_id} #e${pokemon.encounter_id.toString(16)} #type${pokemon.stype} #ss${pokemon.spawnpointId}`);
+    debug_main(`[+] ${pokemon.message_id} #e${pokemon.encounter_id.toString(16)} #type${pokemon.stype} #ss${pokemon.spawnpointId}`);
     return ret;
   };
 };
