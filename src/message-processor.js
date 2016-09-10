@@ -4,6 +4,7 @@ var debug = require('debug')('message-processor');
 var debug_main = require('debug')('main');
 var Spawn = require('./poke-spawn.js');
 var pad = require('pad');
+var crypto = require('crypto');
 
 function getRandomInt(min, max) {
   min = Math.ceil(min);
@@ -45,7 +46,7 @@ class MessageProcessor {
     pokemon.message += `${pokemon.timeInfo}\n`;
     pokemon.message += `#${pokemon.name} #${streetName}\n`;
     pokemon.message += `-----\n`;
-    pokemon.message += `#id${pokemon.message_id}\n`;
+    pokemon.message += `#id${pokemon.message_id}`;
     //pokemon.message += `#e${pokemon.encounter_id.toString(16)} #type${pokemon.stype} #ss${pokemon.spawnpointId}`;
     debug_main(`[+] ${pokemon.message_id} #e${pokemon.encounter_id.toString(16)} #type${pokemon.stype} #ss${pokemon.spawnpointId}`);
     return ret;

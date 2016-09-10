@@ -6,6 +6,7 @@ var PokemonInfo = require('./pokemon-info.js');
 var atob = require('atob');
 var bigInt = require('big-integer');
 var pad = require('pad');
+var crypto = require('crypto');
 
 var config = require('config');
 var geocodeConfig = config.get('geocoder')||{};
@@ -112,8 +113,9 @@ class PokeRequestParser{
     var enable = this.pokeInfo.isEnabled(pokeId);
     var streetName = yield getStreetName(request.message.latitude, request.message.longitude);
     var encounter_id_str = bigInt(atob(request.message.encounter_id),10).toString(16);
-
-    var msg_id = pad(getRandomInt(100000,Number.MAX_SAFE_INTEGER).toString(16).toUpperCase(), 16, 'D');
+    var spawnpointId = parseInt(request.message.spawnpoint_id,16);
+    var msg_id_raw = `${spawnpointId},${encounter_id_str}`;
+    var msg_id = crypto.createHash('md5').update(msg_id_raw).digest("hex");
 
     var pokemon = {
       id : pokeId,
@@ -126,7 +128,7 @@ class PokeRequestParser{
       last_modified_time: request.message.last_modified_time,
       time_until_hidden_ms: request.message.time_until_hidden_ms,
       disappear_time: request.message.disappear_time,
-      spawnpointId: parseInt(request.message.spawnpoint_id,16),
+      spawnpointId: spawnpointId,
       encounter_id: encounter_id_str,
       message_id : msg_id,
       message: ''
